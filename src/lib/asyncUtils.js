@@ -1,3 +1,4 @@
+// 프로미스로 디스패치 하는 함수를 간단히 하기 위한 함수
 export const createPromiseThunk = (type, promiseCreator) => {
   //배열 비구조화 할당을 통해 type 뒷 부분에 문자열 추가
   const [SUCCESS, ERROR] = [`${type}_SUCCESS`, `${type}_ERROR`];
@@ -18,6 +19,7 @@ export const createPromiseThunk = (type, promiseCreator) => {
   return thunkCreator;
 };
 
+// 같은 값들을 계속 변경하는 것에 대해 간단히 하기 위한 함수
 export const reducerUtils = {
   initial: (data = null) => ({
     data,
@@ -39,4 +41,31 @@ export const reducerUtils = {
     loading: false,
     error,
   }),
+};
+
+// 리듀서의 리턴값을을 간단히 하기 위한 유틸 함수
+export const handleAsyncActions = (type, key) => {
+  const [SUCCESS, ERROR] = [`${type}_SUCCESS`, `${type}_ERROR`];
+  return (state, action) => {
+    switch (action.type) {
+      case type:
+        return {
+          ...state,
+          // 중괄호로 감싸면 key 값이 post일 떄는 post, posts일 떄는 posts로 바뀐다
+          [key]: reducerUtils.loading(),
+        };
+      case SUCCESS:
+        return {
+          ...state,
+          [key]: reducerUtils.success(action.payload),
+        };
+      case ERROR:
+        return {
+          ...state,
+          [key]: reducerUtils.error(action.payload),
+        };
+      default:
+        return state;
+    }
+  };
 };

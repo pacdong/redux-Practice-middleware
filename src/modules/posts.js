@@ -1,7 +1,11 @@
 // 가짜 api를 진행중인 상태 성공 상태 데이터 상태, 에러 상태 등을 관리하기
 
 import * as postsAPI from "../api/posts";
-import { createPromiseThunk, reducerUtils } from "../lib/asyncUtils";
+import {
+  createPromiseThunk,
+  handleAsyncActions,
+  reducerUtils,
+} from "../lib/asyncUtils";
 
 // Actions
 
@@ -25,39 +29,22 @@ const initialState = {
   post: reducerUtils.initial(),
 };
 
+// 리듀서 유틸 함수를 가져와서 만든다
+const getPostsReducer = handleAsyncActions(GET_POSTS, "posts");
+const getPostReducer = handleAsyncActions(GET_POST, "post");
+
 // Reducer
 export default function posts(state = initialState, action) {
   switch (action.type) {
+    // 아래 3가지 케이스중 하나라면 리턴값을 반환한다.
     case GET_POSTS:
-      return {
-        ...state,
-        posts: reducerUtils.loading(),
-      };
     case GET_POSTS_SUCCESS:
-      return {
-        ...state,
-        posts: reducerUtils.success(action.payload),
-      };
     case GET_POSTS_ERROR:
-      return {
-        ...state,
-        posts: reducerUtils.error(action.payload),
-      };
+      return getPostsReducer(state, action);
     case GET_POST:
-      return {
-        ...state,
-        post: reducerUtils.loading(),
-      };
     case GET_POST_SUCCESS:
-      return {
-        ...state,
-        post: reducerUtils.success(action.payload),
-      };
     case GET_POST_ERROR:
-      return {
-        ...state,
-        post: reducerUtils.error(action.payload),
-      };
+      return getPostReducer(state, action);
     default:
       return state;
   }
