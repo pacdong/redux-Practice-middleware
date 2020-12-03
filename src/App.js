@@ -1,8 +1,15 @@
-// import CounterContainer from "./Containers/CounterContainer";
-import PostsListContainer from "./Containers/PostListContainer";
+import React from "react";
+import { Route } from "react-router-dom";
+import PostListPage from "./pages/PostListPage";
+import PostPage from "./pages/PostPage";
 
 function App() {
-  return <PostsListContainer />;
+  return (
+    <>
+      <Route path="/" exact component={PostListPage} />
+      <Route path="/:id" exact component={PostPage} />
+    </>
+  );
 }
 
 export default App;

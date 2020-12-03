@@ -9,6 +9,7 @@ import { createStore, applyMiddleware } from "redux";
 import logger from "redux-logger";
 import { composeWithDevTools } from "redux-devtools-extension";
 import ReduxThunk from "redux-thunk";
+import { BrowserRouter } from "react-router-dom";
 
 // 리덕스 정크랑 로거 사용시 로거를 제일 마지막에 위치 시킴
 // 아니면 액션으로 간주해서 중간에 실행함
@@ -20,9 +21,11 @@ const store = createStore(
 
 ReactDOM.render(
   <React.StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
+    <BrowserRouter>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </BrowserRouter>
   </React.StrictMode>,
   document.getElementById("root")
 );
