@@ -44,7 +44,8 @@ export const reducerUtils = {
 };
 
 // 리듀서의 리턴값을을 간단히 하기 위한 유틸 함수
-export const handleAsyncActions = (type, key) => {
+// --- keepData 로 기존의 데이터와 새 데이터를 비교하여 새로운 것을 가지고 오게 만들기
+export const handleAsyncActions = (type, key, keepData) => {
   const [SUCCESS, ERROR] = [`${type}_SUCCESS`, `${type}_ERROR`];
   return (state, action) => {
     switch (action.type) {
@@ -52,7 +53,7 @@ export const handleAsyncActions = (type, key) => {
         return {
           ...state,
           // 중괄호로 감싸면 key 값이 post일 떄는 post, posts일 떄는 posts로 바뀐다
-          [key]: reducerUtils.loading(),
+          [key]: reducerUtils.loading(keepData ? state[key].data : null),
         };
       case SUCCESS:
         return {
