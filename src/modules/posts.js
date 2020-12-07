@@ -29,6 +29,9 @@ export const getPosts = createPromiseThunk(GET_POSTS, postsAPI.getPosts);
 // export const getPost = createPromiseThunk(GET_POST, postsAPI.getPostById);
 // post의 데이터 구조 바꾸기, id 값으로 해당 상태를 조회하기 위하여 meta값으로 id를 전달한다.
 export const getPost = createPromiseThunkById(GET_POST, postsAPI.getPostById);
+export const goToHome = () => (dispatch, getState, { history }) => {
+  history.push("/");
+};
 
 export const clearPost = () => ({ type: CLEAR_POST });
 
