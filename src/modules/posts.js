@@ -3,7 +3,9 @@
 import * as postsAPI from "../api/posts";
 import {
   createPromiseThunk,
+  createPromiseThunkById,
   handleAsyncActions,
+  handleAsyncActionsById,
   reducerUtils,
 } from "../lib/asyncUtils";
 
@@ -26,20 +28,7 @@ const CLEAR_POST = "CLEAR_POST";
 export const getPosts = createPromiseThunk(GET_POSTS, postsAPI.getPosts);
 // export const getPost = createPromiseThunk(GET_POST, postsAPI.getPostById);
 // post의 데이터 구조 바꾸기, id 값으로 해당 상태를 조회하기 위하여 meta값으로 id를 전달한다.
-export const getPost = (id) => async (dispatch) => {
-  dispatch({ type: GET_POST, meta: id });
-  try {
-    const payload = await postsAPI.getPostById(id);
-    dispatch({ type: GET_POST_SUCCESS, payload, meta: id });
-  } catch (e) {
-    dispatch({
-      type: GET_POST_ERROR,
-      payload: e,
-      error: true,
-      meta: id,
-    });
-  }
-};
+export const getPost = createPromiseThunkById(GET_POST, postsAPI.getPostById);
 
 export const clearPost = () => ({ type: CLEAR_POST });
 
@@ -54,38 +43,8 @@ const getPostsReducer = handleAsyncActions(GET_POSTS, "posts", true);
 
 // 데이터 구조를 바꾸기 위하여 이 부분도 직접 리듀서를 반영하는 형태로 작성한다.
 // const getPostReducer = handleAsyncActions(GET_POST, "post");
-const getPostReducer = (state, action) => {
-  const id = action.meta;
-  switch (action.type) {
-    case GET_POST:
-      return {
-        ...state,
-        post: {
-          ...state.post,
-          // 초기에는 state.post[id]값이 undefinded 임으로 앞에 트루일 때 상태를 반영한다
-          [id]: reducerUtils.loading(state.post[id] && state.post[id].data),
-        },
-      };
-    case GET_POST_SUCCESS:
-      return {
-        ...state,
-        post: {
-          ...state.post,
-          [id]: reducerUtils.success(action.payload),
-        },
-      };
-    case GET_POST_ERROR:
-      return {
-        ...state,
-        post: {
-          ...state.post,
-          [id]: reducerUtils.error(action.payload),
-        },
-      };
-    default:
-      return state;
-  }
-};
+// 3번째 파라미터 true는 로딩중에 데이터를 초기화 할지 말지를 결정해준다.
+const getPostReducer = handleAsyncActionsById(GET_POST, "post", true);
 
 // Reducer
 export default function posts(state = initialState, action) {

@@ -19,6 +19,32 @@ export const createPromiseThunk = (type, promiseCreator) => {
   return thunkCreator;
 };
 
+// id값을 받아와서 직접 디스패치 하는 것을 한줄로 간단히 하기 위한 함수
+const defaultIdSelector = (param) => param;
+export const createPromiseThunkById = (
+  type,
+  promiseCreator,
+  idSelector = defaultIdSelector
+) => {
+  const [SUCCESS, ERROR] = [`${type}_SUCCESS`, `${type}_ERROR`];
+
+  const thunkCreator = (param) => async (dispatch) => {
+    const id = idSelector(param);
+    dispatch({ type, meta: id });
+    try {
+      const payload = await promiseCreator(param);
+      dispatch({ type: SUCCESS, payload, meta: id });
+    } catch (e) {
+      // FSA (Flux Standard Action) 이라는 규칙으로 유틸 함수를 만들 때 유용하다
+      // 모든 액션의 값들을 payload라는 것으로 통일 시킨다.
+      // error 발생 했을 때는 error값을 true로 설정한다.
+      // 그래서 payload에 e를 넣고 error에 true
+      dispatch({ type: ERROR, payload: e, error: true, meta: id });
+    }
+  };
+  return thunkCreator;
+};
+
 // 같은 값들을 계속 변경하는 것에 대해 간단히 하기 위한 함수
 export const reducerUtils = {
   initial: (data = null) => ({
@@ -64,6 +90,44 @@ export const handleAsyncActions = (type, key, keepData) => {
         return {
           ...state,
           [key]: reducerUtils.error(action.payload),
+        };
+      default:
+        return state;
+    }
+  };
+};
+
+export const handleAsyncActionsById = (type, key, keepData) => {
+  const [SUCCESS, ERROR] = [`${type}_SUCCESS`, `${type}_ERROR`];
+  return (state, action) => {
+    const id = action.meta;
+    switch (action.type) {
+      case type:
+        return {
+          ...state,
+          // 중괄호로 감싸면 key 값이 post일 떄는 post, posts일 떄는 posts로 바뀐다
+          [key]: {
+            ...state[key],
+            [id]: reducerUtils.loading(
+              keepData ? state[key][id] && state[key].data : null
+            ),
+          },
+        };
+      case SUCCESS:
+        return {
+          ...state,
+          [key]: {
+            ...state[key],
+            [id]: reducerUtils.success(action.payload),
+          },
+        };
+      case ERROR:
+        return {
+          ...state,
+          [key]: {
+            ...state[key],
+            [id]: reducerUtils.error(action.payload),
+          },
         };
       default:
         return state;
