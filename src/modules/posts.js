@@ -2,13 +2,15 @@
 
 import * as postsAPI from "../api/posts";
 import {
-  createPromiseThunk,
-  createPromiseThunkById,
+  // createPromiseThunk,
+  // createPromiseThunkById,
+  createPromiseSaga,
+  createPromiseSagaById,
   handleAsyncActions,
   handleAsyncActionsById,
   reducerUtils,
 } from "../lib/asyncUtils";
-import { call, put, takeEvery } from "redux-saga/effects";
+import { takeEvery } from "redux-saga/effects";
 
 // Actions
 
@@ -36,33 +38,37 @@ const CLEAR_POST = "CLEAR_POST";
 export const getPosts = () => ({ type: GET_POSTS });
 export const getPost = (id) => ({ type: GET_POST, payload: id, meta: id });
 
-function* getPostsSaga() {
-  try {
-    const posts = yield call(postsAPI.getPosts);
-    yield put({ type: GET_POSTS_SUCCESS, payload: posts });
-  } catch (e) {
-    yield put({ type: GET_POSTS_ERROR, payload: e, error: true });
-  }
-}
+const getPostsSaga = createPromiseSaga(GET_POSTS, postsAPI.getPosts);
+const getPostSaga = createPromiseSagaById(GET_POST, postsAPI.getPostById);
 
-function* getPostSaga(action) {
-  const id = action.payload;
-  try {
-    const post = yield call(postsAPI.getPostById, id);
-    yield put({
-      type: GET_POST_SUCCESS,
-      payload: post,
-      meta: id,
-    });
-  } catch (e) {
-    yield put({
-      type: GET_POSTS_ERROR,
-      payload: e,
-      error: true,
-      meta: id,
-    });
-  }
-}
+// root를 이용하여 편리하게 만들기 전 사가 사용하는 법
+// function* getPostsSaga() {
+//   try {
+//     const posts = yield call(postsAPI.getPosts);
+//     yield put({ type: GET_POSTS_SUCCESS, payload: posts });
+//   } catch (e) {
+//     yield put({ type: GET_POSTS_ERROR, payload: e, error: true });
+//   }
+// }
+
+// function* getPostSaga(action) {
+//   const id = action.payload;
+//   try {
+//     const post = yield call(postsAPI.getPostById, id);
+//     yield put({
+//       type: GET_POST_SUCCESS,
+//       payload: post,
+//       meta: id,
+//     });
+//   } catch (e) {
+//     yield put({
+//       type: GET_POSTS_ERROR,
+//       payload: e,
+//       error: true,
+//       meta: id,
+//     });
+//   }
+// }
 
 export function* postsSaga() {
   yield takeEvery(GET_POSTS, getPostsSaga);
