@@ -10,7 +10,7 @@ import {
   handleAsyncActionsById,
   reducerUtils,
 } from "../lib/asyncUtils";
-import { takeEvery, getContext } from "redux-saga/effects";
+import { takeEvery, getContext, select } from "redux-saga/effects";
 
 // Actions
 
@@ -23,6 +23,7 @@ const GET_POST_SUCCESS = "GET_POST_SUCCESS";
 const GET_POST_ERROR = "GET_POST_ERROR";
 
 const GO_TO_HOME = "GO_TO_HOME";
+const PRINT_STATE = "PRINT_STATE"; // Saga에서 상태 조회하기
 
 // post page에서 뒤로가기 후 새로운 page 진입시 기존 상태가 살짝 보이는 것을 방지하기 위한 액션
 const CLEAR_POST = "CLEAR_POST";
@@ -39,12 +40,18 @@ const CLEAR_POST = "CLEAR_POST";
 // Redux-Saga로 getPost 구현
 export const getPosts = () => ({ type: GET_POSTS });
 export const getPost = (id) => ({ type: GET_POST, payload: id, meta: id });
+export const printState = () => ({ type: PRINT_STATE });
 
 const getPostsSaga = createPromiseSaga(GET_POSTS, postsAPI.getPosts);
 const getPostSaga = createPromiseSagaById(GET_POST, postsAPI.getPostById);
 function* goToHomeSaga() {
   const history = yield getContext("history");
   history.push("/");
+}
+
+function* printStateSaga() {
+  const state = yield select((state) => state.posts);
+  console.log(state);
 }
 
 // root를 이용하여 편리하게 만들기 전 사가 사용하는 법
@@ -80,6 +87,7 @@ export function* postsSaga() {
   yield takeEvery(GET_POSTS, getPostsSaga);
   yield takeEvery(GET_POST, getPostSaga);
   yield takeEvery(GO_TO_HOME, goToHomeSaga);
+  yield takeEvery(PRINT_STATE, printStateSaga);
 }
 
 // Saga로 히스토리 연결
