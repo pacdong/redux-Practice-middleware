@@ -8,6 +8,7 @@ import {
   handleAsyncActionsById,
   reducerUtils,
 } from "../lib/asyncUtils";
+import { call, put, takeEvery } from "redux-saga/effects";
 
 // Actions
 
@@ -25,10 +26,51 @@ const CLEAR_POST = "CLEAR_POST";
 // 선언한 액션 타입들에 대해서 Jenerator Actions 함수를 생성해도 되지만 정크에서 바로
 // 정크에서 직접 디스패치 하는 형태로 작성해도 된다
 
-export const getPosts = createPromiseThunk(GET_POSTS, postsAPI.getPosts);
-// export const getPost = createPromiseThunk(GET_POST, postsAPI.getPostById);
-// post의 데이터 구조 바꾸기, id 값으로 해당 상태를 조회하기 위하여 meta값으로 id를 전달한다.
-export const getPost = createPromiseThunkById(GET_POST, postsAPI.getPostById);
+// Redux-thunk 로 getPost구현
+// export const getPosts = createPromiseThunk(GET_POSTS, postsAPI.getPosts);
+// // export const getPost = createPromiseThunk(GET_POST, postsAPI.getPostById);
+// // post의 데이터 구조 바꾸기, id 값으로 해당 상태를 조회하기 위하여 meta값으로 id를 전달한다.
+// export const getPost = createPromiseThunkById(GET_POST, postsAPI.getPostById);
+
+// Redux-Saga로 getPost 구현
+export const getPosts = () => ({ type: GET_POSTS });
+export const getPost = (id) => ({ type: GET_POST, payload: id, meta: id });
+
+function* getPostsSaga() {
+  try {
+    const posts = yield call(postsAPI.getPosts);
+    yield put({ type: GET_POSTS_SUCCESS, payload: posts });
+  } catch (e) {
+    yield put({ type: GET_POSTS_ERROR, payload: e, error: true });
+  }
+}
+
+function* getPostSaga(action) {
+  const id = action.payload;
+  try {
+    const post = yield call(postsAPI.getPostById, id);
+    yield put({
+      type: GET_POST_SUCCESS,
+      payload: post,
+      meta: id,
+    });
+  } catch (e) {
+    yield put({
+      type: GET_POSTS_ERROR,
+      payload: e,
+      error: true,
+      meta: id,
+    });
+  }
+}
+
+export function* postsSaga() {
+  yield takeEvery(GET_POSTS, getPostsSaga);
+  yield takeEvery(GET_POST, getPostSaga);
+}
+
+// 여기까지 Redux-Saga
+
 export const goToHome = () => (dispatch, getState, { history }) => {
   history.push("/");
 };
