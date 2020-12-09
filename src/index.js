@@ -13,7 +13,12 @@ import { createBrowserHistory } from "history";
 import createSagaMiddleware from "redux-saga";
 
 const customHistory = createBrowserHistory();
-const sagaMiddleware = createSagaMiddleware();
+const sagaMiddleware = createSagaMiddleware({
+  // saga에서 history 조회하기
+  context: {
+    history: customHistory,
+  },
+});
 
 // 리덕스 정크랑 로거 사용시 로거를 제일 마지막에 위치 시킴
 // 아니면 액션으로 간주해서 중간에 실행함
